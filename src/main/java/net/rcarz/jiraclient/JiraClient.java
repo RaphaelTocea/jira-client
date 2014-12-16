@@ -1,33 +1,44 @@
 /**
- * jira-client - a simple JIRA REST client
- * Copyright (c) 2013 Bob Carroll (bob.carroll@alum.rit.edu)
+ * jira-client - a simple JIRA REST client Copyright (c) 2013 Bob Carroll
+ * (bob.carroll@alum.rit.edu)
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
-
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this library; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
-
 package net.rcarz.jiraclient;
 
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.BasicClientConnectionManager;
 
 /**
  * A simple JIRA REST client.
@@ -53,13 +64,44 @@ public class JiraClient {
      * @param creds Credentials to authenticate with
      */
     public JiraClient(String uri, ICredentials creds) {
-        DefaultHttpClient httpclient = new DefaultHttpClient();
+        this(uri, creds, false);
+    }
 
+    /**
+     * Creates an authenticated JIRA client.
+     *
+     * @param uri Base URI of the JIRA server
+     * @param creds Credentials to authenticate with
+     * @param disableHostnameVerification Disable hostname verification in
+     * httpclient
+     */
+    public JiraClient(String uri, ICredentials creds, boolean disableHostnameVerification) {
+        DefaultHttpClient httpclient = new DefaultHttpClient();
+        if (disableHostnameVerification) {
+            SchemeRegistry registry = new SchemeRegistry();
+            SSLSocketFactory socketFactory;
+            try {
+                socketFactory = new SSLSocketFactory(new TrustSelfSignedStrategy(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                registry.register(new Scheme("https", 443, socketFactory));
+                ClientConnectionManager mgr = new BasicClientConnectionManager(registry);
+                httpclient = new DefaultHttpClient(mgr);
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(JiraClient.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (KeyManagementException ex) {
+                Logger.getLogger(JiraClient.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (KeyStoreException ex) {
+                Logger.getLogger(JiraClient.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnrecoverableKeyException ex) {
+                Logger.getLogger(JiraClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         restclient = new RestClient(httpclient, creds, URI.create(uri));
 
-        if (creds != null)
+        if (creds != null) {
             username = creds.getLogonName();
         }
+
+    }
 
     /**
      * Creates a new issue in the given project.
@@ -127,7 +169,7 @@ public class JiraClient {
      * <li>summary,comment - include just the summary and comments</li>
      * <li>*all,-comment - include all fields</li>
      * </ul>
-     * 
+     *
      * @param expand issue fields to expand when getting issue data
      *
      * @return an issue instance
@@ -198,7 +240,7 @@ public class JiraClient {
 
         return Issue.search(restclient, jql, includedFields, null);
     }
-    
+
     /**
      * Search for issues with the given query and specify which fields to
      * retrieve.
@@ -230,8 +272,8 @@ public class JiraClient {
     /**
      * Search for issues with the given query and specify which fields to
      * retrieve. If the total results is bigger than the maximum returned
-     * results, then further calls can be made using different values for
-     * the <code>startAt</code> field to obtain all the results.
+     * results, then further calls can be made using different values for the
+     * <code>startAt</code> field to obtain all the results.
      *
      * @param restclient REST client instance
      *
@@ -246,10 +288,10 @@ public class JiraClient {
      * <li>summary,comment - include just the summary and comments</li>
      * <li>*all,-comment - include all fields</li>
      * </ul>
-     * 
+     *
      * @param maxResults if non-<code>null</code>, defines the maximum number of
-     * results that can be returned 
-     * 
+     * results that can be returned
+     *
      * @param startAt if non-<code>null</code>, defines the first issue to
      * return
      *
@@ -263,7 +305,8 @@ public class JiraClient {
         return Issue.search(restclient, jql, includedFields, maxResults,
                 startAt);
     }
-   /**
+
+    /**
      *
      * @return a list of all priorities available in the Jira installation
      * @throws JiraException
@@ -303,7 +346,7 @@ public class JiraClient {
         List<CustomFieldOption> customFieldOptions = Field.getResourceArray(
                 CustomFieldOption.class,
                 fieldMetadata.get("allowedValues"),
-            restclient
+                restclient
         );
         return customFieldOptions;
     }
@@ -324,7 +367,7 @@ public class JiraClient {
         List<Component> componentOptions = Field.getResourceArray(
                 Component.class,
                 fieldMetadata.get("allowedValues"),
-            restclient
+                restclient
         );
         return componentOptions;
     }
@@ -339,6 +382,7 @@ public class JiraClient {
 
     /**
      * Obtains the list of all projects in Jira.
+     *
      * @return all projects; not all data is returned for each project; to get
      * the extra data use {@link #getProject(String)}
      * @throws JiraException failed to obtain the project list.
@@ -360,9 +404,10 @@ public class JiraClient {
             throw new JiraException(ex.getMessage(), ex);
         }
     }
-    
+
     /**
      * Obtains information about a project, given its project key.
+     *
      * @param key the project key
      * @return the project
      * @throws JiraException failed to obtain the project
@@ -376,9 +421,10 @@ public class JiraClient {
             throw new JiraException(ex.getMessage(), ex);
         }
     }
-    
+
     /**
      * Obtains the list of all issue types in Jira.
+     *
      * @return all issue types
      * @throws JiraException failed to obtain the issue type list.
      */
@@ -399,7 +445,7 @@ public class JiraClient {
             throw new JiraException(ex.getMessage(), ex);
         }
     }
-    
+
     /**
      * Creates a new component in the given project.
      *
@@ -410,14 +456,14 @@ public class JiraClient {
     public Component.FluentCreate createComponent(String project) {
         return Component.create(restclient, project);
     }
-    
+
     /**
      * Obtains a component given its ID.
-     * 
+     *
      * @param id the component ID
-     * 
+     *
      * @return the component
-     * 
+     *
      * @throws JiraException failed to obtain the component
      */
     public Component getComponent(String id) throws JiraException {
