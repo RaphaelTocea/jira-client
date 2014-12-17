@@ -499,6 +499,10 @@ public class Issue extends Resource {
         return (JSONObject)jo.get("fields");
     }
 
+    public Map getFields() {
+        return fields;
+    }
+
     private JSONArray getTransitions() throws JiraException {
         JSON result = null;
 
