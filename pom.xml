@@ -3,7 +3,7 @@
 
     <groupId>org.komea.jiraclient</groupId>
     <artifactId>jira-client</artifactId>
-    <version>0.6.2-SNAPSHOT</version>
+    <version>0.6.3</version>
     <packaging>jar</packaging>
 
     <name>jira-client</name>
@@ -23,24 +23,24 @@
       <connection>https://github.com/RaphaelTocea/org-komea-jiraclient</connection>
     </scm>-->
 
-<!--<scm>
-  <connection>https://github.com/RaphaelTocea/jira-client.git</connection>
-  <url>https://github.com/RaphaelTocea/jira-client.git</url>
-</scm>-->
+    <!--<scm>
+      <connection>https://github.com/RaphaelTocea/jira-client.git</connection>
+      <url>https://github.com/RaphaelTocea/jira-client.git</url>
+    </scm>-->
 
 
-<scm>
-  <connection>scm:git:https://github.com/RaphaelTocea/jira-client.git</connection>
-  <developerConnection>scm:git:git@github.com:RaphaelTocea/jira-client.git</developerConnection>
-  <url>https://github.com/RaphaelTocea/jira-client.git</url>
-  <!--<tag>HEAD</tag>-->
-  <tag>HEAD</tag>
-  </scm>
+    <scm>
+        <connection>scm:git:https://github.com/RaphaelTocea/jira-client.git</connection>
+        <developerConnection>scm:git:git@github.com:RaphaelTocea/jira-client.git</developerConnection>
+        <url>https://github.com/RaphaelTocea/jira-client.git</url>
+        <!--<tag>HEAD</tag>-->
+        <tag>HEAD</tag>
+    </scm>
 
 
-<!--<properties>
-    <project.scm.id>my-scm-server</project.scm.id>
-</properties>-->
+    <!--<properties>
+        <project.scm.id>my-scm-server</project.scm.id>
+    </properties>-->
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -50,7 +50,7 @@
     <distributionManagement>
         <repository>
             <id>bintray</id>
-            <url>https://api.bintray.com/maven/raphael/org-komea-jiraclient/jira-client</url>
+            <url>https://api.bintray.com/maven/sleroy/maven/jira-client</url>                        
         </repository>
     </distributionManagement>
 
